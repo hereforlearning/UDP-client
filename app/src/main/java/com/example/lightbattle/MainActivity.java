@@ -10,9 +10,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import android.widget.TextView;
+import android.os.Handler;
+import android.os.Message;
 
 public class MainActivity extends AppCompatActivity {
-
+    private TextView udpresult;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,7 +31,33 @@ public class MainActivity extends AppCompatActivity {
                 SendData(nbrepet,data,port,address);
             }
         });
+
+        findViewById(R.id.bshutdown).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int nbrepet = Integer.parseInt(((TextView) findViewById(R.id.EdNbRepete)).getText().toString());
+                String data = ((TextView) findViewById(R.id.EdText)).getText().toString();
+                int port = Integer.valueOf(((TextView) findViewById(R.id.EdPort)).getText().toString());
+                String address = ((TextView) findViewById(R.id.EdIpServeur)).getText().toString();
+                SendData(1,"akjsdfuewirmzxcvhbreith32434",51234,"192.168.0.108");
+            }
+        });
+        udpresult=(TextView) findViewById(R.id.tvudpresult);
+        ReceiveData(51234);
+
+
     }
+
+    private Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch(msg.what){
+                case 0:
+                    String data = (String) msg.obj;
+                    udpresult.setText(data);
+                    break;
+            }
+        };
+    };
 
 
 
@@ -109,6 +138,11 @@ public class MainActivity extends AppCompatActivity {
 
     // Modifie l affichage en fonction de la tram recu
     public void DisplayData(DatagramPacket data) {
+        Message msg = new Message();
+        String msgdata = new String(data.getData(), data.getOffset(), data.getLength());
+        msg.obj = msgdata;//可以是基本类型，可以是对象，可以是List、map等；
+        msg.what=0;
+        mHandler.sendMessage(msg);
         System.out.println(data);
     }
 
